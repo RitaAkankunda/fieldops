@@ -1,0 +1,277 @@
+# FieldOps — Day 1 Development Progress Report
+
+**Project:** FieldOps — Field Service Management System  
+**Day:** 1  
+**Date:** 20 November 2026  
+**Phase:** Product Discovery, Requirements Analysis, and Initial Planning  
+**Status:** Completed
+
+---
+
+## 1. Day 1 Objective
+
+The objective of Day 1 was to understand the problem FieldOps aims to solve, identify its intended users, define the minimum viable product (MVP), and document the proposed business workflows before beginning software implementation.
+
+The focus was on understanding **what the system should do and why**, rather than immediately writing code.
+
+## 2. Project Overview
+
+FieldOps is a proposed web-based field service management application for small businesses offering services such as:
+
+- CCTV installation and repair.
+- Computer networking.
+- Electrical installation and maintenance.
+- Other technical field services.
+
+The application aims to help businesses register customer requests, assign technicians, track job progress, and maintain a history of important activities.
+
+The underlying business problem remains a hypothesis requiring validation with potential users.
+
+## 3. Activities Completed
+
+### Activity 1 — Set Up the GitHub Repository
+
+Created and configured the FieldOps GitHub repository.
+
+Repository: https://github.com/RitaAkankunda/fieldops
+
+Cloned the repository locally and opened it in Visual Studio Code.
+
+Established the initial project structure:
+
+```text
+fieldops/
+├── docs/
+│   ├── 01-problem-statement.md
+│   ├── 02-user-roles.md
+│   ├── 03-functional-requirements.md
+│   ├── 04-business-workflows.md
+│   ├── 05-assumptions-and-open-questions.md
+│   └── 06-architecture-decisions.md
+├── backend/
+├── frontend/
+└── README.md
+```
+
+### Activity 2 — Documented the Problem Statement
+
+Created `docs/01-problem-statement.md`.
+
+Identified the proposed problem of customer service requests being difficult to manage when received through different communication channels.
+
+Defined the intended users, project motivation, expected value, and initial scope.
+
+### Activity 3 — Identified User Roles
+
+Created `docs/02-user-roles.md`.
+
+Defined two initial user roles:
+
+**Administrator**
+- Registers service requests.
+- Approves or declines requests.
+- Creates work orders.
+- Assigns technicians.
+- Reviews completion reports.
+- Closes work orders.
+
+**Technician**
+- Views currently assigned work orders.
+- Starts assigned jobs.
+- Updates job progress.
+- Submits completion notes.
+
+Established the principle that users should access only the information and actions permitted by their roles.
+
+### Activity 4 — Defined Functional Requirements
+
+Created `docs/03-functional-requirements.md`.
+
+Documented twelve proposed functional requirements:
+
+| ID | Requirement | Priority |
+|---|---|---|
+| FR-01 | Register Service Request | Must Have |
+| FR-02 | Generate Unique Request Reference | Must Have |
+| FR-03 | View and Filter Service Requests | Must Have |
+| FR-04 | Approve or Decline Requests | Must Have |
+| FR-05 | Create Work Order | Must Have |
+| FR-06 | Assign Technician | Must Have |
+| FR-07 | View Assigned Work Orders | Must Have |
+| FR-08 | Update Work-Order Progress | Must Have |
+| FR-09 | Submit Job Completion | Must Have |
+| FR-10 | Review and Close Work Order | Must Have |
+| FR-11 | Record Audit History | Must Have |
+| FR-12 | Attach Completion Photos | Should Have |
+
+Each requirement includes acceptance criteria, business rules, and relevant open questions.
+
+### Activity 5 — Documented Business Workflows
+
+Created `docs/04-business-workflows.md`.
+
+Described the main workflows:
+
+1. Register a service request.
+2. Review and approve or decline a request.
+3. Create a work order.
+4. Assign a technician.
+5. View and start an assigned work order.
+6. Submit job completion.
+7. Review and close a work order.
+
+Also documented audit history, alternative flows, and unresolved workflow exceptions.
+
+### Activity 6 — Recorded Assumptions and Open Questions
+
+Created `docs/05-assumptions-and-open-questions.md`.
+
+Separated proposed project decisions from unvalidated business assumptions.
+
+Identified questions involving:
+
+- Customer and work-order cancellation.
+- Paused or blocked jobs.
+- Multiple site visits.
+- Technician reassignment.
+- Rejected completion reports.
+- Reopening closed work orders.
+- Data privacy and retention.
+- User account management.
+
+Also documented project risks and a proposed stakeholder validation plan.
+
+### Activity 7 — Documented Initial Architecture Decisions
+
+Created `docs/06-architecture-decisions.md`.
+
+Proposed the following technical approach:
+
+| Area | Proposed Choice |
+|---|---|
+| Frontend | React / Next.js |
+| Backend | Python / Django |
+| API | Django REST Framework |
+| Database | PostgreSQL |
+| Backend testing | Pytest / pytest-django |
+| Architecture | Modular monolith |
+| Version control | Git and GitHub |
+
+Recorded initial architecture decision records (ADRs) covering application structure, database choice, backend authorization, state transitions, audit history, automated testing, and optional photo uploads.
+
+These remain proposed decisions for further review.
+
+## 4. Technical Skills Practised
+
+During Day 1, I practised:
+
+- Creating and organizing project documentation.
+- Writing Markdown files.
+- Previewing Markdown in VS Code.
+- Using Windows PowerShell commands.
+- Checking repository status with `git status`.
+- Staging specific files with `git add`.
+- Creating commits with `git commit`.
+- Pushing commits with `git push`.
+- Distinguishing staged files from untracked files.
+- Unstaging accidentally staged files without deleting their contents.
+
+## 5. Software Engineering Concepts Learned
+
+### Requirements Engineering
+
+Learned to describe expected system behavior using functional requirements, acceptance criteria, and business rules.
+
+### Role-Based Authorization
+
+Understood why administrators and technicians require different permissions, and why backend enforcement is essential.
+
+### State Machines
+
+Introduced explicit status transitions for work orders:
+
+`UNASSIGNED → ASSIGNED → IN_PROGRESS → COMPLETION_SUBMITTED → CLOSED`
+
+This represents the proposed normal workflow. Exceptions still require modelling.
+
+### Business Validation
+
+Learned that the system must validate inputs, permissions, and workflow states before accepting actions.
+
+### Separation of Responsibilities
+
+Distinguished technician completion submission from administrator review and closure.
+
+### Audit Trails
+
+Learned why important events should preserve the responsible user, timestamp, and relevant changes.
+
+### Scope Management
+
+Distinguished Must Have requirements from optional features to protect the 30-day MVP schedule.
+
+## 6. Challenges Encountered and Resolved
+
+**PowerShell command differences:** Some commands commonly used in Unix shells did not work as expected in Windows PowerShell. Adjusted to PowerShell-compatible commands.
+
+**Git staging:** Multiple documentation files were staged when only one was intended. Used `git restore --staged` to unstage the extra files without deleting their content.
+
+**Documentation organization:** Clarified that FR-01 through FR-12 are sections inside one functional requirements file, not separate files.
+
+**Markdown formatting:** Used VS Code's Markdown preview to check headings, tables, and formatting.
+
+## 7. GitHub Progress
+
+The following commits were confirmed during the development session:
+
+| Document | Commit |
+|---|---|
+| Problem Statement | `3b8ec76` |
+| User Roles | `1fb93bb` |
+| Functional Requirements | `df1cdaf` |
+| Architecture Decisions | `408b737` |
+
+Business Workflows and Assumptions and Open Questions were also worked on, with commit steps initiated during the session.
+
+The final architecture decisions push succeeded on the `main` branch.
+
+## 8. Day 1 Deliverables
+
+- [x] GitHub repository and initial project structure.
+- [x] Problem statement document.
+- [x] User roles document.
+- [x] Functional requirements document.
+- [x] Business workflows document.
+- [x] Assumptions and open questions document.
+- [x] Initial architecture decisions document.
+- [x] Git version control practice.
+- [x] Markdown formatting review.
+
+**Overall result:** Day 1 documentation drafting completed.
+
+## 9. Plan for Day 2 — Domain Modelling
+
+Tomorrow's focus will be translating the documented business requirements into a domain model.
+
+Planned activities:
+
+1. Identify the main domain entities.
+2. Distinguish entities from value objects.
+3. Define relationships between service requests, work orders, technicians, and audit records.
+4. Identify business invariants.
+5. Model service request and work-order state transitions.
+6. Review important exception workflows.
+7. Sketch an initial domain diagram.
+8. Document domain modelling decisions before implementing Django models.
+
+## 10. Day 1 Reflection
+
+Day 1 focused on planning before implementation.
+
+The main achievement was establishing a structured foundation for FieldOps, including its intended users, proposed business processes, functional requirements, and initial technical direction.
+
+An important lesson was that building software involves more than writing code. Requirements analysis, domain understanding, documentation, version control, and deliberate design decisions are also essential engineering activities.
+
+The next step is to use these documents to guide domain modelling, while keeping unresolved business assumptions visible.
+
+**Day 1 Status: Completed — Ready for Day 2.**
