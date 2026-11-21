@@ -1,0 +1,295 @@
+# FieldOps — Day 3 Progress Report
+
+**Project:** FieldOps — Field Service Management System  
+**Date:** 21 November 2026  
+**Development Day:** 3  
+**Phase:** System Architecture and Backend Planning  
+**Status:** Architecture planning completed; backend implementation not yet started
+
+---
+
+## 1. Day 3 Objective
+
+The objective of Day 3 was to design the initial technical architecture for FieldOps before beginning implementation.
+
+The focus was on understanding how the frontend, backend, and database will communicate, organizing the Django backend into modules, planning authentication and authorization, and defining an automated testing strategy.
+
+The goal was to establish a clear structure for implementation rather than begin writing application features immediately.
+
+## 2. Work Completed
+
+### 2.1 Designed the High-Level System Architecture
+
+Planned a three-layer application architecture:
+
+- **Frontend:** Next.js and React
+- **Backend:** Django and Django REST Framework
+- **Database:** PostgreSQL
+
+The frontend will communicate with the backend through HTTP requests and JSON responses.
+
+The backend will handle authentication, authorization, business rules, data validation, and database operations.
+
+The database will store application data and enforce important integrity constraints.
+
+### 2.2 Selected a Modular Monolith Architecture
+
+Chose a modular monolith for the initial FieldOps MVP.
+
+This means FieldOps will use one Django backend organized into separate applications rather than multiple independently deployed microservices.
+
+Reasons for this decision include:
+
+- Simpler development and deployment.
+- Clear separation of responsibilities.
+- Easier testing and maintenance.
+- Suitability for the project's 30-day MVP scope.
+- Reduced infrastructure complexity.
+
+### 2.3 Planned the Django Backend Modules
+
+Identified five main backend directories:
+
+| Directory | Responsibility |
+|---|---|
+| `config` | Project-wide Django configuration |
+| `accounts` | User accounts, roles, and authentication |
+| `service_requests` | Service request registration and review |
+| `work_orders` | Work-order creation, assignment, progress, and closure |
+| `audit` | Recording important actions and changes |
+
+Created these directories inside `backend/` using Windows PowerShell.
+
+At the end of Day 3, these were still empty directories. Django project and application files had not yet been generated.
+
+### 2.4 Understood the Purpose of Django Configuration
+
+Learned that the `config` directory will contain Django's project-wide configuration.
+
+Important future files include:
+
+- `settings.py` — application settings and database configuration.
+- `urls.py` — URL routing.
+- `asgi.py` — ASGI application entry point.
+- `wsgi.py` — WSGI application entry point.
+
+Confirmed that database connection settings belong in `config/settings.py`, rather than in a business application's model files.
+
+### 2.5 Planned Authentication and Authorization
+
+Studied the difference between:
+
+- **Authentication:** Verifying who a user is.
+- **Authorization:** Determining what an authenticated user is allowed to do.
+
+FieldOps will initially support two roles:
+
+- `ADMIN`
+- `TECHNICIAN`
+
+Identified the need for both role-based permissions and object-level permissions.
+
+For example, a technician must not update another technician's assigned work order, even when both users have the same role.
+
+Decided that Django REST Framework will enforce backend permissions. The Next.js frontend may hide unavailable actions for usability, but frontend restrictions alone will not provide security.
+
+### 2.6 Planned Business Logic Organization
+
+Decided to organize important workflow operations into clearly named service functions or equivalent application methods.
+
+Examples include:
+
+- `create_work_order()`
+- `assign_technician()`
+- `start_work()`
+- `submit_completion()`
+- `close_work_order()`
+
+These operations will enforce business rules and valid state transitions.
+
+The backend will also use database constraints and transactions where appropriate to preserve data integrity.
+
+### 2.7 Planned the Automated Testing Strategy
+
+Selected the following testing tools for the Django backend:
+
+- `pytest`
+- `pytest-django`
+- Django REST Framework testing utilities
+
+Identified three main categories of tests:
+
+1. **Unit tests:** Verify individual business rules and state transitions.
+2. **Integration tests:** Verify interactions between application components and the database.
+3. **API tests:** Verify endpoints, authentication, permissions, validation, and responses.
+
+Reviewed the Test-Driven Development cycle:
+
+**Red → Green → Refactor**
+
+Planned priority tests for duplicate work-order prevention, technician permissions, invalid state transitions, completion requirements, and audit logging.
+
+### 2.8 Created and Published the Architecture Document
+
+Created:
+
+`docs/10-system-architecture.md`
+
+The document records the planned system architecture, technology stack, module boundaries, security responsibilities, testing strategy, and open architectural questions.
+
+Committed the document to Git and successfully pushed it to GitHub.
+
+**Commit:** `c97a9b8`  
+**Branch:** `main`
+
+A subsequent `git pull` confirmed that the local branch was already up to date.
+
+## 3. Practical Commands Used
+
+The following commands were used during Day 3:
+
+```powershell
+New-Item -ItemType Directory -Path backend\config
+
+Get-ChildItem backend
+
+New-Item -ItemType Directory -Path backend\accounts, backend\service_requests, backend\work_orders, backend\audit
+
+code docs/10-system-architecture.md
+
+git status
+
+git add .
+
+git commit -m 'docs/10-system-architecture.md'
+
+git push
+
+git pull
+```
+
+The Git commands successfully committed and published the architecture document.
+
+For future commits, staging specific files is preferred when unrelated changes may be present.
+
+## 4. Key Concepts Learned
+
+### 4.1 Separation of Concerns
+
+Different parts of the application should have clearly defined responsibilities.
+
+For example, Django configuration belongs in `config`, while work-order functionality belongs in `work_orders`.
+
+### 4.2 Modular Monolith Architecture
+
+A single backend can be organized into separate modules without requiring microservices.
+
+This provides structure while keeping the initial system manageable.
+
+### 4.3 Authentication Versus Authorization
+
+Signing in successfully does not automatically give a user permission to access every record.
+
+Authorization must consider both the user's role and the specific resource being accessed.
+
+### 4.4 Backend Security Enforcement
+
+Security rules must be enforced by the backend because frontend restrictions can be bypassed.
+
+### 4.5 Test-Driven Development
+
+Automated tests can express expected behavior before implementation.
+
+The Red → Green → Refactor cycle helps guide incremental development and protect existing functionality.
+
+### 4.6 Database Integrity
+
+Some important business rules should be protected through database constraints, not only application code.
+
+For example, a service request must not produce multiple work orders.
+
+## 5. Challenges and Observations
+
+### 5.1 Understanding the Role of `config`
+
+Initially, the purpose of the Django `config` directory required clarification.
+
+This was resolved by learning that it contains project-wide settings and routing rather than business features.
+
+### 5.2 Distinguishing Roles from Record Ownership
+
+A key learning point was that two users with the same role should not necessarily have access to the same records.
+
+The technician assignment example helped clarify object-level authorization.
+
+### 5.3 Planning Before Coding
+
+Day 3 focused on architecture and preparation rather than implementation.
+
+This helped establish how the system should be organized before introducing Django code.
+
+## 6. Deliverables
+
+| Deliverable | Status |
+|---|---|
+| High-level architecture design | Completed |
+| Django module plan | Completed |
+| Backend directory preparation | Completed |
+| Authentication and authorization plan | Completed |
+| Business logic organization plan | Completed |
+| Automated testing strategy | Completed |
+| `docs/10-system-architecture.md` | Created, committed, and pushed |
+| `docs/11-day-3-progress-report.md` | Prepared for saving and committing |
+
+## 7. Work Not Yet Completed
+
+The following activities remain for later development:
+
+- Installing Django and backend dependencies.
+- Initializing the Django project.
+- Generating Django application files.
+- Configuring PostgreSQL.
+- Implementing models, serializers, views, and services.
+- Implementing authentication and permissions.
+- Writing and running automated tests.
+- Building the Next.js frontend.
+
+No working backend API or database integration was implemented during Day 3.
+
+## 8. Plan for Day 4
+
+**Day 4 Focus: Django Backend Setup**
+
+Planned activities:
+
+1. Check Python and development environment prerequisites.
+2. Create and activate a Python virtual environment.
+3. Install Django, Django REST Framework, and testing dependencies.
+4. Initialize the Django project and application modules.
+5. Configure initial project settings.
+6. Verify that the Django development server starts.
+7. Record setup results and any problems encountered.
+
+Database configuration and feature implementation will proceed incrementally as the development environment becomes ready.
+
+## 9. Day 3 Reflection
+
+Day 3 improved my understanding of how to structure a full-stack application before writing business features.
+
+I learned that a reliable system needs more than working screens and endpoints. It also needs clear module responsibilities, backend-enforced security, well-defined business rules, and a testing strategy.
+
+Creating the backend directories and publishing the architecture document helped turn the initial design into a more concrete development plan.
+
+The project is now ready to move from architecture planning into backend setup.
+
+## 10. Conclusion
+
+Day 3 successfully established the initial technical architecture for FieldOps.
+
+The system's main components, Django modules, security boundaries, business logic organization, and testing approach have been planned and documented.
+
+The next step is to initialize the Django backend and begin implementing the application incrementally.
+
+---
+
+**Next Development Day:** Day 4 — Django Backend Setup
