@@ -1,0 +1,410 @@
+# FieldOps — Day 2 Development Progress Report
+
+**Project:** FieldOps — Field Service Management System  
+**Development Day:** Day 2  
+**Date:** 21 November 2026  
+**Phase:** Domain Modelling  
+**Status:** Completed — Initial Domain Design
+
+---
+
+## 1. Day 2 Objective
+
+The objective of Day 2 was to identify and model the core business concepts of FieldOps before beginning backend implementation.
+
+The focus was on understanding domain entities, their relationships, business rules, lifecycle states, and exceptional workflows.
+
+This activity builds on the requirements and business workflows documented during Day 1.
+
+## 2. Overview of Activities Completed
+
+During Day 2, I completed the initial domain modelling exercise for FieldOps.
+
+The activities included:
+
+1. Identifying the core domain entities.
+2. Defining relationships between entities.
+3. Establishing domain invariants.
+4. Modelling service request and work order state transitions.
+5. Exploring technician assignment and reassignment.
+6. Examining exceptional business workflows.
+7. Identifying test scenarios for future implementation.
+8. Creating the initial domain model document.
+9. Preparing the domain model for version control in GitHub.
+
+## 3. Core Domain Entities Identified
+
+Four main entities were identified.
+
+### 3.1 ServiceRequest
+
+Represents a customer's request for a service, such as CCTV repair, network installation, or electrical maintenance.
+
+Its responsibilities include:
+
+- Recording customer information and the reported problem.
+- Tracking whether the request is pending, approved, or declined.
+- Providing the source for an authorized work order.
+
+The initial statuses are:
+
+- `PENDING_REVIEW`
+- `APPROVED`
+- `DECLINED`
+
+### 3.2 WorkOrder
+
+Represents authorized work that a technician is expected to perform.
+
+Its responsibilities include:
+
+- Tracking the work to be completed.
+- Maintaining the current technician assignment.
+- Recording work progress.
+- Capturing completion notes.
+- Supporting administrator review and closure.
+
+The initial statuses are:
+
+- `UNASSIGNED`
+- `ASSIGNED`
+- `IN_PROGRESS`
+- `COMPLETION_SUBMITTED`
+- `CLOSED`
+
+### 3.3 User
+
+Represents a person authorized to access FieldOps.
+
+The initial user roles are:
+
+- `ADMIN`
+- `TECHNICIAN`
+
+A key design decision was to model technicians as users with a `TECHNICIAN` role rather than introducing a separate Technician entity for the MVP.
+
+### 3.4 AuditEvent
+
+Represents an important business action recorded for accountability and traceability.
+
+Examples include:
+
+- Service request approval.
+- Work order creation.
+- Technician assignment.
+- Technician reassignment.
+- Completion submission.
+- Work order closure.
+
+Audit history helps preserve information about who performed an action, when it happened, and what changed.
+
+## 4. Entity Relationships Defined
+
+### 4.1 ServiceRequest and WorkOrder
+
+A service request can produce zero or one work order.
+
+A work order must belong to an approved service request.
+
+This relationship prevents duplicate work orders and ensures that jobs are authorized before execution.
+
+### 4.2 User and WorkOrder
+
+A technician can be assigned multiple work orders.
+
+Each work order can have zero or one current assigned technician.
+
+A work order may initially remain unassigned.
+
+### 4.3 User and AuditEvent
+
+A user can perform many actions that generate audit events.
+
+Each audit event identifies the responsible actor.
+
+These relationships form the foundation for the future database schema.
+
+## 5. Domain Invariants Learned
+
+I learned that a domain invariant is a business rule that must always remain true.
+
+The important invariants identified include:
+
+1. A work order must reference an existing service request.
+2. A work order can only be created from an approved service request.
+3. A service request cannot produce more than one work order.
+4. A work order can have at most one current technician.
+5. Only an active user with the `TECHNICIAN` role can receive a new technician assignment.
+6. Only the currently assigned technician can perform technician-specific work-order updates.
+7. Work-order status changes must follow valid transitions.
+8. Completion submission requires nonempty notes.
+9. Completion submission does not automatically close a work order.
+10. Only an administrator can perform administrative review and closure.
+11. Important changes must be recorded in the audit history.
+
+These rules will later guide backend validation, authorization, database constraints, and automated testing.
+
+## 6. Service Request State Modelling
+
+The initial service request lifecycle was defined as:
+
+```text
+                +--> APPROVED
+                |
+PENDING_REVIEW -+
+                |
+                +--> DECLINED
+```
+
+Only an administrator can approve or decline a pending service request.
+
+For the initial MVP, reversing an approval or decline decision remains outside the happy-path workflow.
+
+## 7. Work Order State Modelling
+
+The normal work order lifecycle was defined as:
+
+```text
+UNASSIGNED
+    |
+    v
+ASSIGNED
+    |
+    v
+IN_PROGRESS
+    |
+    v
+COMPLETION_SUBMITTED
+    |
+    v
+CLOSED
+```
+
+The main lessons from this exercise were:
+
+- A work order cannot start before a technician is assigned.
+- Only the current assigned technician can start and update the job.
+- Completion notes are required before submission.
+- A technician cannot close a work order directly.
+- An administrator must review completion before closing the work order.
+
+This helped me understand how state machines prevent invalid business operations.
+
+## 8. Exceptional Workflows Explored
+
+### 8.1 Rejected Completion
+
+A technician may submit a completion report that the administrator does not accept.
+
+The proposed handling is:
+
+1. The administrator reviews the submitted completion.
+2. The administrator rejects it with a reason.
+3. The work order returns to `IN_PROGRESS`.
+4. The assigned technician corrects the work.
+5. The technician submits completion again.
+6. The rejection and resubmission are preserved in the audit history.
+
+This is a provisional extension whose implementation priority will be reviewed against the MVP timeline.
+
+### 8.2 Technician Reassignment
+
+A technician may become unavailable after a work order has been assigned or started.
+
+The proposed rules are:
+
+- Only an administrator can reassign a work order.
+- The new technician must be active.
+- The previous technician loses update access.
+- The work order retains its current status.
+- The reassignment is recorded in the audit history.
+- A reason is required when reassigning an in-progress job.
+- Closed work orders cannot be reassigned in the initial MVP.
+
+### 8.3 Deferred Exceptional Workflows
+
+Other workflows were identified but not fully designed for implementation:
+
+- Customer cancellation.
+- Pausing work.
+- Reopening closed work orders.
+- Multiple technicians working on one job.
+- Multiple visits for a single service request.
+
+These remain open design questions.
+
+## 9. Important Software Engineering Concepts Learned
+
+### 9.1 Domain-Driven Design
+
+I learned how to identify business concepts and model them as entities with distinct responsibilities.
+
+### 9.2 Entity Identity
+
+I learned that an entity retains its identity even when its attributes or status change.
+
+### 9.3 Cardinality
+
+I learned how to describe relationships such as one-to-zero-or-one and one-to-many.
+
+### 9.4 Domain Invariants
+
+I learned how business rules protect the consistency of the system.
+
+### 9.5 State Machines
+
+I learned how to define valid and invalid transitions between business states.
+
+### 9.6 Authorization
+
+I learned that a valid status transition must also be performed by an authorized user.
+
+### 9.7 State Versus Event
+
+I learned that a state describes the current condition of an entity, while an event records something that happened.
+
+For example, `IN_PROGRESS` is a state, while `TECHNICIAN_REASSIGNED` is an event.
+
+### 9.8 Auditability
+
+I learned why important business actions must remain traceable, even after assignments or statuses change.
+
+### 9.9 Scope Management
+
+I learned to distinguish core MVP requirements from exceptional workflows that may be deferred.
+
+## 10. Design Decisions Made
+
+The following initial decisions were documented:
+
+| Decision | Rationale |
+|---|---|
+| Separate ServiceRequest and WorkOrder | Customer demand and job execution have different responsibilities |
+| Allow at most one work order per request | Keeps the MVP simple and prevents duplicate jobs |
+| Represent technicians using the User role | Avoids unnecessary entity complexity |
+| Allow zero or one current technician per work order | Supports unassigned jobs and straightforward assignment |
+| Require administrator review before closure | Separates technician completion from final acceptance |
+| Preserve reassignment history | Supports accountability |
+| Use explicit state transitions | Prevents invalid workflow changes |
+| Defer selected exception workflows | Protects the 30-day MVP scope |
+
+These decisions are provisional and may be revised following stakeholder validation.
+
+## 11. Documentation Produced
+
+The main Day 2 deliverable was:
+
+**`docs/08-domain-model.md`**
+
+The document covers:
+
+- Domain overview.
+- Core entities and attributes.
+- Entity relationships.
+- Domain invariants.
+- Service request state transitions.
+- Work order state transitions.
+- Technician assignment and reassignment.
+- Exceptional workflows.
+- MVP scope decisions.
+- Initial testing scenarios.
+
+This progress report is the second Day 2 documentation deliverable:
+
+**`docs/09-day-2-progress-report.md`**
+
+## 12. Version Control Activities
+
+During Day 2, I practiced the Git workflow for adding a new documentation file.
+
+Commands used included:
+
+```powershell
+git status
+git add docs/08-domain-model.md
+git commit -m "docs: add Day 2 domain model"
+git push origin main
+```
+
+The repository was reported as up to date after the version-control steps.
+
+The progress report will be committed separately after it has been reviewed.
+
+## 13. Challenges and Lessons
+
+### Challenge 1: Distinguishing Related Entities
+
+Initially, ServiceRequest and WorkOrder might appear to represent the same business activity.
+
+**Lesson:** Separate entities when they represent different responsibilities and lifecycles.
+
+### Challenge 2: Understanding Relationships
+
+It was necessary to decide how many work orders a request can produce and how many technicians can be assigned.
+
+**Lesson:** Cardinality is a business decision that influences the database design.
+
+### Challenge 3: Handling Invalid Actions
+
+The system must reject duplicate work orders and unauthorized updates.
+
+**Lesson:** Important business rules should be enforced by the backend, not only by the user interface.
+
+### Challenge 4: Modelling Exceptions
+
+Real-world jobs may be reassigned or require corrections.
+
+**Lesson:** Exceptional workflows should be considered during design, even if some are deferred.
+
+### Challenge 5: Controlling Scope
+
+Adding every possible workflow could make the MVP difficult to complete.
+
+**Lesson:** Document future possibilities without automatically implementing them.
+
+## 14. Day 2 Completion Checklist
+
+- [x] Identify core domain entities.
+- [x] Define entity responsibilities.
+- [x] Define entity relationships.
+- [x] Identify domain invariants.
+- [x] Model service request states.
+- [x] Model work order states.
+- [x] Explore completion rejection.
+- [x] Explore technician reassignment.
+- [x] Identify audit requirements.
+- [x] Identify initial automated test scenarios.
+- [x] Create the initial domain model document.
+- [x] Stage the domain model in Git.
+- [x] Report successful synchronization with GitHub.
+- [x] Prepare the Day 2 progress report.
+
+## 15. Plan for Day 3
+
+**Day 3 Focus: System Architecture**
+
+The next activities will include:
+
+1. Review the overall FieldOps architecture.
+2. Define responsibilities for the Next.js frontend, Django REST Framework backend, and PostgreSQL database.
+3. Plan the backend module structure.
+4. Decide where business rules and permissions belong.
+5. Review authentication and authorization boundaries.
+6. Plan the testing structure.
+7. Document architecture decisions and the initial project structure.
+
+## 16. Personal Reflection
+
+Day 2 helped me understand that software development is not only about writing code.
+
+Before creating database tables or API endpoints, I need to understand the business entities, the rules that govern them, and the actions users are permitted to perform.
+
+I also learned that clear domain modelling can prevent future implementation mistakes, such as duplicate jobs, invalid status changes, and unauthorized technician updates.
+
+The initial FieldOps domain model provides a foundation for the architecture and implementation phases.
+
+---
+
+**Day 2 Outcome:** Initial domain modelling completed.
+
+**Next Phase:** Day 3 — System Architecture and Project Structure.
