@@ -1,0 +1,28 @@
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Local SQLite database
+db.sqlite3
+
+# Testing files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Next.js generated files
+node_modules/
+.next/
+
+# Operating system files
+.DS_Store
+Thumbs.db
